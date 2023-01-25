@@ -2,5 +2,6 @@ node_modules/
 images_HQ/
 images_COMPRESSED/
 HTML/
+text/
 
 .env
