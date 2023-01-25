@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html data-theme="light">
+  <head>
+    <link rel="stylesheet" href="https://unpkg.com/@picocss/pico@latest/css/pico.min.css">
+    <script src="../socket.io/socket.io.js"></script>
+
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <script>
+
+        const scrollToBottom = (id) => {
+            const element = document.getElementById(id);
+            element.scrollTop = element.scrollHeight;
+        }
+
+
+        var socket = io();
+
+        async function getData() {
+            disableAllBtn();
+            socket.emit('trigger', '1');
+        }
+        
+        socket.on('trigger', function(msg) {
+            document.getElementById("response").innerHTML+='<div>--------</div>'
+            document.getElementById("response").innerHTML+=msg
+
+            scrollToBottom('aside1')
+        })
+
+
+        function getIMAGE(){
+            disableAllBtn();
+            socket.emit('trigger', '--IMAGE')
+        }
+        
+        function compress(){
+            disableAllBtn();
+            socket.emit('trigger', '--COMPRESS')
+        }
+
+        function buildHtml(){
+            disableAllBtn();
+            socket.emit('trigger', '--BUILDHTML')
+        }
+        function firebaseDeploy(){
+            disableAllBtn();
+            socket.emit('trigger', '--FIREBASEDEPLOY')
+        }
+        function firebaseDBSync(){
+            disableAllBtn();
+            socket.emit('trigger', '--FIREBASEDBSYNC')
+        }
+
+        function disableAllBtn(){
+            document.getElementById('chatgptDATA').disabled=true
+            document.getElementById('generateIMG').disabled=true
+            document.getElementById('compressIMG').disabled=true
+            document.getElementById('buildHTML').disabled=true
+            document.getElementById('DeployFirebase').disabled=true
+            document.getElementById('firebaseDBSync').disabled=true
+        }
+        function enableAllBtn(){
+            document.getElementById('chatgptDATA').disabled=false
+            document.getElementById('generateIMG').disabled=false
+            document.getElementById('compressIMG').disabled=false
+            document.getElementById('buildHTML').disabled=false
+            document.getElementById('DeployFirebase').disabled=false
+            document.getElementById('firebaseDBSync').disabled=false
+        }
+        socket.on('--countCHATGPT--', function(msg){
+            document.getElementById('curr').innerText=msg+1
+        })
+        socket.on('--ENABLE-BTN--',(msg)=>{
+            if(msg=='TRUE'){
+                enableAllBtn();
+            }
+        })
+
+    </script>
+    <style>
+        button{
+            width: fit-content;
+        }
+    </style>
+  </head>
+  <body>
+    <div class="grid" style="text-align: center;">
+        <article>
+            <h5>
+                Current running ID
+                <kbd id="curr">-</kbd>
+            </h5> 
+            <button id="chatgptDATA" onclick="getData()">Get Data from ChatGpt</button>
+            <button id="generateIMG" onclick="getIMAGE()">Generate IMAGE</button>
+            <button id="compressIMG" onclick="compress()">Compress and Save IMAGE</button>
+            <button id="buildHTML" onclick="buildHtml()">Build HTML</button>
+            <button id="DeployFirebase" onclick="firebaseDeploy()">Deploy to Firebase</button>
+            <button id="firebaseDBSync" onclick="firebaseDBSync()">Firebase DB SYNC</button>
+        </article>
+        <aside id="aside1" style="overflow-y: scroll; height: 90vh; text-align: start;">
+            <div id="response"></div>
+        </aside>
+    </div>
+  </body>
+</html>
