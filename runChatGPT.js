@@ -20,8 +20,7 @@ async function getTopicsFromSQL(){
             await generateContent(rows);
         }
         catch(e){
-            socketIo.emit('--ENABLE-BTN--', 'TRUE')
-
+            socketIo.emit('--ENABLE-BTN--', 'TRUE');
         }
     });
     return;

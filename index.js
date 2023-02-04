@@ -20,6 +20,7 @@ import { deployToFirebase } from './deployToFirebase.js';
 import { getDataForFirebaseDB } from './syncDBToFirebase.js';
 import { initializeApp } from 'firebase/app';
 import { getFirestore } from 'firebase/firestore';
+import { buildTopicList } from './generateTopics.js';
 
 const io = new Server(server);
 
@@ -40,7 +41,7 @@ global.db = getFirestore(f_app);
 
 global.api = new ChatGPTAPIBrowser({
     email: process.env['email'],
-    password: process.env['password'],
+    password: process.env['password']+'#',
     isGoogleLogin: true,
 })
 
@@ -59,11 +60,31 @@ app.get('/', (req, res) => {
     }
 });
 
+app.get('/buildTopic', async(req, res)=>{
+    
+    let topic = req.query.topic;
+    let subtopic = req.query.subtopic;
+
+    if(topic.length>0 && subtopic.length>0){
+        let tags = [
+            [subtopic, topic]
+        ]
+        await buildTopicList(tags);
+    }
+
+
+    socketIo.emit('--ENABLE-BTN--', 'TRUE');
+
+    res.send('DONE')
+
+})
+
 
 io.on('connection', (socket) => {
     console.log('a user connected');
     socket.on('trigger', async(msg) => {
         console.log('message: ' + msg);
+
         if(msg=='1'){
             await getTopicsFromSQL();
         }

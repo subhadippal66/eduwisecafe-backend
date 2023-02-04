@@ -9,7 +9,7 @@ var con = mysql.createConnection({
 });
 
 function getDatafromSQLToGenerateImage(){
-    let sqlQ = `SELECT * from topics WHERE isTextcreated = 1 AND isImageCreated IS NULL LIMIT 20`
+    let sqlQ = `SELECT * from topics WHERE isTextcreated = 1 AND isImageCreated IS NULL`
     con.query(sqlQ, async function (err, rows, fields) {
         if (err) throw err;
         await generateImages_STABLE_DIFFUSION(rows);
@@ -26,7 +26,7 @@ async function generateImages_STABLE_DIFFUSION(rows){
     for (let i = 0; i < rows.length; i++) {
         socketIo.emit('trigger',rows[i]['id']+"-"+rows[i]['header'])
         
-        let promtMessage = rows[i]['header'] + ' , detailed, atmospheric, epic, concept art, matte painting, mist, photo-realistic, concept art, volumetric light';
+        let promtMessage = rows[i]['header'] + ' , detailed, atmospheric, epic, concept art, matte painting, mist, photo-realistic, concept art';
 
         socketIo.emit('trigger', promtMessage);
 

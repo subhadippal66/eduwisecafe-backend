@@ -14,7 +14,12 @@ function getDataForBuildHTML() {
     con.query(sqlQ, async function (err, rows, fields) {
         if (err) throw err;
         await buildHtml(rows);
+        
+
         buildTagsJSON();
+        
+        buildSitemap()
+
 
     });
 }
@@ -23,7 +28,6 @@ function getDataForBuildHTML() {
 async function buildHtml(rows) {
     let sizeofDB = rows.length;
     if (sizeofDB == 0) {
-        socketIo.emit('--ENABLE-BTN--', 'TRUE')
         socketIo.emit('trigger', 'Already Updated')
         return;
     }
@@ -121,6 +125,8 @@ async function buildHtml(rows) {
                 <link rel="stylesheet" href="../static/customCSS.css">
                 <link rel="stylesheet" href="../blog_css.css">
                 <!-- Style and title END -->
+
+                <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5697692834870795" crossorigin="anonymous"></script>
             
             </head>
             
@@ -214,6 +220,22 @@ async function buildHtml(rows) {
                         </div>
                     </section>
                     <!-- Subscribe END -->
+
+
+                    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5697692834870795"
+                        crossorigin="anonymous"></script>
+                    <!-- new 2 -->
+                    <ins class="adsbygoogle"
+                        style="display:block"
+                        data-ad-client="ca-pub-5697692834870795"
+                        data-ad-slot="3301308967"
+                        data-ad-format="auto"
+                        data-full-width-responsive="true"></ins>
+                    <script>
+                        (adsbygoogle = window.adsbygoogle || []).push({});
+                    </script>
+
+                    
             
             
                     <!-- Share page BEGIN -->
@@ -327,12 +349,15 @@ async function buildHtml(rows) {
         }) //readfile End
 
     }   //for loop end
+
 }
 
 function buildTagsJSON(){
-    let sqlQ = `SELECT topic,subtopic from topics WHERE isTextcreated = 1 AND isImageCreated = 1 AND isImageCompressed = 1 AND isHTMLcreated = 1`
+    let sqlQ = `SELECT * from topics WHERE isTextcreated = 1 AND isImageCreated = 1 AND isImageCompressed = 1 AND isHTMLcreated = 1`
     con.query(sqlQ, async function (err, rows, fields) {
+
         socketIo.emit('trigger', 'Building Tags .....')
+        
 
         let tags = {};
         for(let i=0; i<rows.length; i++){
@@ -350,9 +375,8 @@ function buildTagsJSON(){
 
         fs.writeFile("./TagsJSON.json", JSON.stringify(tags), 'utf-8', (err)=>{
             if(err) throw err;
-            socketIo.emit('trigger', 'Building Tags DONE ✅')
+            // socketIo.emit('trigger', 'Building Tags DONE ✅')
 
-            setTimeout(() => {
                 let dest1 = 'E:/Development/eduwisecafe/prod/static/TagsJSON.json'
                 let dest2 = 'E:/Development/eduwisecafe/static/TagsJSON.json'
                 fs.copyFile("./TagsJSON.json", dest1, (err)=>{
@@ -362,11 +386,89 @@ function buildTagsJSON(){
                     if(err) throw err;
                 })
 
-            }, 1000);
+                socketIo.emit('trigger', 'Building Tags DONE ✅')
+
 
         })
 
     });
+}
+
+
+function buildSitemap(){
+
+    let sqlQ = `SELECT * from topics WHERE isTextcreated = 1 AND isImageCreated = 1 AND isImageCompressed = 1 AND isHTMLcreated = 1`
+    con.query(sqlQ, async function (err, rows, fields) {
+        if(err) throw err;
+    
+        socketIo.emit('trigger', 'Building Sitemap .....')
+
+        let sitemap = `<?xml version="1.0" encoding="UTF-8"?>
+            <urlset
+                xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+                xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9
+                    http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
+
+            <url>
+                <loc>https://eduwisecafe.web.app/</loc>
+                <lastmod>2023-01-24T11:29:15+00:00</lastmod>
+                <priority>1.00</priority>
+            </url>
+        `;
+
+        let topic = {};
+
+        for(let i=0; i<rows.length; i++){
+            if(!topic[rows[i]['subtopic']]){
+                topic[rows[i]['subtopic']] = 1
+            }
+
+
+            sitemap += `<url>
+                <loc>https://eduwisecafe.web.app/blog/${rows[i]['HTMLname']}</loc>
+                <lastmod>${moment(""+rows[i]['dateCreated'], 'MMMM Do YYYY').format()}</lastmod>
+                <priority>1.00</priority>
+            </url>
+            
+            `;
+        }
+
+        Object.keys(topic).forEach(d=>{
+            sitemap += `<url>
+                <loc>https://eduwisecafe.web.app/topic.html?topic=${d}</loc>
+                <lastmod>${moment().format()}</lastmod>
+                <priority>1.00</priority>
+            </url>
+            
+            `;
+        })
+
+        sitemap += `</urlset>`
+
+        fs.writeFile('./sitemap.xml', sitemap, (err)=>{
+            if(err)throw err;
+
+            console.log('domeee')
+
+            let dest1 = 'E:/Development/eduwisecafe/prod/sitemap.xml'
+            let dest2 = 'E:/Development/eduwisecafe/sitemap.xml'
+            fs.copyFile("./sitemap.xml", dest1, (err)=>{
+                if(err) throw err;
+            })
+            fs.copyFile("./sitemap.xml", dest2, (err)=>{
+                if(err) throw err;
+            })
+
+
+            socketIo.emit('trigger', 'Building Sitemap DONE ✅')
+            socketIo.emit('--ENABLE-BTN--', 'TRUE')
+
+
+
+        })
+    }); 
+
 }
 
 export {

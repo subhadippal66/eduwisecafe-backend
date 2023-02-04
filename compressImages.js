@@ -67,7 +67,7 @@ async function compressImages(rows){
                         socketIo.emit('--ENABLE-BTN--', 'TRUE')
                     }
 
-                }, 1000);
+                }, 3000);
             })
             
     }

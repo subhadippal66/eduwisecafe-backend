@@ -50,6 +50,20 @@
             disableAllBtn();
             socket.emit('trigger', '--FIREBASEDBSYNC')
         }
+        function GenerateTopics(){
+            let topic = document.getElementById('topic').value;
+            let subtopic = document.getElementById('subtopic').value;
+
+            if(topic.length>0 && subtopic.length>0){
+                disableAllBtn();
+                fetch(`http://localhost:3000/buildTopic?topic=${topic}&subtopic=${subtopic}`)
+                .then(res=>{
+                    console.log(res);
+                    alert(res.statusText)
+                })
+            }
+
+        }
 
         function disableAllBtn(){
             document.getElementById('chatgptDATA').disabled=true
@@ -58,6 +72,7 @@
             document.getElementById('buildHTML').disabled=true
             document.getElementById('DeployFirebase').disabled=true
             document.getElementById('firebaseDBSync').disabled=true
+            document.getElementById('GenerateTopics').disabled=true
         }
         function enableAllBtn(){
             document.getElementById('chatgptDATA').disabled=false
@@ -66,6 +81,7 @@
             document.getElementById('buildHTML').disabled=false
             document.getElementById('DeployFirebase').disabled=false
             document.getElementById('firebaseDBSync').disabled=false
+            document.getElementById('GenerateTopics').disabled=false
         }
         socket.on('--countCHATGPT--', function(msg){
             document.getElementById('curr').innerText=msg+1
@@ -90,6 +106,17 @@
                 Current running ID
                 <kbd id="curr">-</kbd>
             </h5> 
+            <div class="grid">
+                <div>
+                    <input id="topic" placeholder="Topic eg. History" type="text">
+                </div>
+                <div>
+                    <input id="subtopic" placeholder="Subtopic eg. Indus valley civilization" type="text">
+                </div>
+                <div>
+                    <button id="GenerateTopics" onclick="GenerateTopics()">Generate Topics</button>
+                </div>
+            </div>
             <button id="chatgptDATA" onclick="getData()">Get Data from ChatGpt</button>
             <button id="generateIMG" onclick="getIMAGE()">Generate IMAGE</button>
             <button id="compressIMG" onclick="compress()">Compress and Save IMAGE</button>
